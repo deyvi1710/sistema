@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digitalizar Boletas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="app-shell">
+                <aside class="sidebar">
+                    <div class="brand">
+                        <div class="brand-title">Sistema OLTP</div>
+                        <div class="brand-subtitle">Compras y Ventas</div>
+                    </div>
+
+                    <nav class="side-nav">
+                        <button type="button" class="tab-btn" data-view="ventas">Ventas</button>
+                        <button type="button" class="tab-btn" data-view="compras">Compras</button>
+                        <button type="button" class="tab-btn" data-view="detalles">Detalles</button>
+                        <div class="nav-sep"></div>
+                        <button type="button" class="tab-btn" data-view="proveedores">Proveedores</button>
+                        <button type="button" class="tab-btn" data-view="productos">Productos</button>
+                    </nav>
+                </aside>
+
+                <main class="main">
+                    <header class="topbar">
+                        <h2 class="page-title">📦 Sistema OLTP</h2>
+                        <div id="mensaje" style="display:none"></div>
+                    </header>
+
+                    <datalist id="productosList"></datalist>
+
+            <section id="view-ventas" class="view" style="display:none">
+                <h3>Ventas</h3>
+
+                <div class="grid">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Nueva venta (boleta)</div>
+                        </div>
+
+                        <form id="ventaForm">
+                            <label>Tipo de Documento:</label>
+                            <select id="v_tipo_doc" required>
+                                <option value="BOLETA">Boleta</option>
+                                <option value="FACTURA">Factura</option>
+                            </select>
+
+                            <label>Número de Documento:</label>
+                            <input type="text" id="v_nro_doc" required>
+                            <div id="v_nro_doc_help" style="font-size: 12px; margin-top: 4px; min-height: 16px;"></div>
+
+                            <label>Fecha:</label>
+                            <input type="date" id="v_fecha" required>
+
+                            <label>Cliente (Nombre):</label>
+                            <input type="text" id="v_cliente_nombre" required>
+
+                            <label>Cliente (DNI/RUC):</label>
+                            <input type="text" id="v_cliente_doc">
+
+                            <label>Total:</label>
+                            <input type="number" step="0.01" id="v_total" required readonly>
+
+                            <label>Observaciones:</label>
+                            <textarea id="v_obs" rows="2"></textarea>
+
+                            <h3>Items de la venta:</h3>
+                            <div id="v_items"></div>
+                            <button type="button" id="btnAgregarItemVenta">➕ Agregar Item</button>
+
+                            <br><br>
+                            <button type="submit">💾 Guardar Venta</button>
+                        </form>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Listado</div>
+                            <button type="button" id="btnRefrescarVentas">Refrescar</button>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="table" id="tblVentas">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Documento</th>
+                                        <th>Fecha</th>
+                                        <th>Cliente</th>
+                                        <th>Total</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-proveedores" class="view">
+                <h3>Proveedores</h3>
+
+                <div class="grid">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Listado</div>
+                            <button type="button" id="btnRefrescarProveedores">Refrescar</button>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="table" id="tblProveedores">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>RUC</th>
+                                        <th>Nombre Comercial</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Formulario</div>
+                            <button type="button" id="btnNuevoProveedor">Nuevo</button>
+                        </div>
+
+                        <form id="formProveedor">
+                            <input type="hidden" id="prov_id_proveedor">
+
+                            <label>RUC:</label>
+                            <input type="text" id="prov_ruc" maxlength="11" required>
+
+                            <label>Razón Social:</label>
+                            <input type="text" id="prov_razon_social">
+
+                            <label>Nombre Comercial:</label>
+                            <input type="text" id="prov_nombre_comercial" required>
+
+                            <label>Dirección:</label>
+                            <textarea id="prov_direccion" rows="2"></textarea>
+
+                            <label>Estado:</label>
+                            <select id="prov_estado">
+                                <option value="ACTIVO">ACTIVO</option>
+                                <option value="INACTIVO">INACTIVO</option>
+                            </select>
+
+                            <button type="submit" id="btnGuardarProveedor">Guardar</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-productos" class="view" style="display:none">
+                <h3>Productos</h3>
+
+                <div class="grid">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Listado</div>
+                            <button type="button" id="btnRefrescarProductos">Refrescar</button>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="table" id="tblProductos">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>SKU</th>
+                                        <th>Nombre</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Formulario</div>
+                            <button type="button" id="btnNuevoProducto">Nuevo</button>
+                        </div>
+
+                        <form id="formProducto">
+                            <input type="hidden" id="prod_id_producto">
+
+                            <label>SKU:</label>
+                            <input type="text" id="prod_sku_producto" readonly>
+
+                            <label>Nombre del Producto:</label>
+                            <input type="text" id="prod_nombre_producto" required>
+
+                            <label>Unidad de Medida:</label>
+                            <select id="prod_unidad_medida" required>
+                                <option value="">Seleccione...</option>
+                                <option value="UN">Unidades (UN)</option>
+                                <option value="KG">Kilogramos (KG)</option>
+                                <option value="LTS">Litros (LTS)</option>
+                            </select>
+
+                            <label>Categoría:</label>
+                            <input type="text" id="prod_categoria">
+
+                            <label>Estado:</label>
+                            <select id="prod_estado">
+                                <option value="ACTIVO">ACTIVO</option>
+                                <option value="INACTIVO">INACTIVO</option>
+                            </select>
+
+                            <button type="submit" id="btnGuardarProducto">Guardar</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-compras" class="view" style="display:none">
+                <h3>Compras</h3>
+
+                <div class="grid">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Nueva compra</div>
+                        </div>
+
+                        <form id="boletaForm">
+                            <label>Tipo de Documento:</label>
+                            <select id="tipo_doc" required>
+                                <option value="BOLETA">Boleta</option>
+                                <option value="FACTURA">Factura</option>
+                                <option value="GUIA">Guía de Remisión</option>
+                            </select>
+
+                            <label>Número de Documento:</label>
+                            <input type="text" id="nro_doc" placeholder="Ej: 001-022901" required>
+                            <div id="nro_doc_help" style="font-size: 12px; margin-top: 4px; min-height: 16px;"></div>
+
+                            <label>Fecha (en la boleta):</label>
+                            <input type="date" id="fecha" required>
+
+                            <label>Proveedor (RUC):</label>
+                            <select id="proveedor" required>
+                                <option value="">Cargando...</option>
+                            </select>
+
+                            <label>Total (según boleta):</label>
+                            <input type="number" step="0.01" id="total" required readonly>
+
+                            <label>Observaciones:</label>
+                            <textarea id="obs" rows="2" placeholder="Ej: Boleta manuscrita, difícil de leer"></textarea>
+
+                            <h3>Items de la compra:</h3>
+                            <div id="items"></div>
+                            <button type="button" id="btnAgregarItem">➕ Agregar Item</button>
+
+                            <br><br>
+                            <button type="submit">💾 Guardar Compra</button>
+                        </form>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Listado</div>
+                            <button type="button" id="btnRefrescarCompras">Refrescar</button>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="table" id="tblCompras">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Documento</th>
+                                        <th>Fecha</th>
+                                        <th>Proveedor</th>
+                                        <th>Total</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-detalles" class="view" style="display:none">
+                <h3>Detalles de Compra</h3>
+
+                <div class="grid">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Listado</div>
+                            <button type="button" id="btnRefrescarDetalles">Refrescar</button>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="table" id="tblDetalles">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Compra</th>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Precio</th>
+                                        <th>Total</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Formulario</div>
+                            <button type="button" id="btnNuevoDetalle">Nuevo</button>
+                        </div>
+
+                        <form id="formDetalle">
+                            <input type="hidden" id="det_id_detalle">
+
+                            <label>Compra:</label>
+                            <select id="det_id_compra" required></select>
+
+                            <label>Número línea:</label>
+                            <input type="number" id="det_numero_linea" min="1" step="1">
+
+                            <label>Producto:</label>
+                            <select id="det_id_producto" required></select>
+
+                            <label>Cantidad:</label>
+                            <input type="number" step="0.01" id="det_cantidad" required min="0.01">
+
+                            <label>Precio Unitario:</label>
+                            <input type="number" step="0.01" id="det_precio_unitario" required min="0.01">
+
+                            <label>Total Línea:</label>
+                            <input type="number" step="0.01" id="det_total_linea" required min="0.01">
+
+                            <button type="submit" id="btnGuardarDetalle">Guardar</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
