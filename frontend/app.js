@@ -1,5 +1,5 @@
 // Configuración de la API
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'https://e8f7-190-236-58-233.ngrok-free.app/api';
 
 let itemCount = 0;
 let ventaItemCount = 0;
